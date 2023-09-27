@@ -8,15 +8,19 @@
 </head>
 
 <body>
+  <a id="viewScores">View High Scores</a>
+  
   <div class="container">
     <h1 class="game-name">Coding Quiz Challenge</h1>
     <button id="start-button" onclick="startQuiz()">Start Quiz</button>
     <h2 id="countdown">Time left: 60 seconds</h2>
-    <p id="userScore"></p>
-    <p id="main">main</p>
-    <div id="options"></div>
+    <p id="main"></p>
     <p id="message"></p>
-    <p id="highScore"></p>
+
+    <div id="scores-container">
+      <p id="scores"></p>
+      <button id="clear-scores" onclick="clearScores()">Clear High Scores</button>
+    </div>
   </div>
   <script src="./assets/script.js"></script>
 </body>

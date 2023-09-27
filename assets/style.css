@@ -46,12 +46,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* handle input | submit button | and hidden feature */
-/* Add styling for hidden elements */
-.hidden {
-  display: none;
-}
-
 /* Add styling for input and button */
 input[type="text"] {
   padding: 10px;
@@ -61,4 +55,13 @@ input[type="text"] {
 button {
   padding: 10px 20px;
   font-size: 18px;
+}
+#start-button {
+  display: block;
+  margin: 0 auto;
+}
+
+#clear-scores{
+  display: none;
+  margin: 0 auto;
 }

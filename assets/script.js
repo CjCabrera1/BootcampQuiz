@@ -1,10 +1,14 @@
-// Get HTML elements by their IDs
 var timerCD = document.getElementById("countdown");
 var mainEl = document.getElementById('main');
 var messageDiv = document.getElementById('message');
 var startButton = document.getElementById('start-button');
-var isGameOver = false; // Variable to check if the game is over
+var clearScoreBtn = document.getElementById('clear-scores');
+var viewScoresEl = document.getElementById('viewScores');
+var currentQuestionIndex = 0; // Variable to keep track of the current question
+var score = 0;  // Initialize score
 
+var isGameOver = false; // Variable to check if the game is over
+var timer = 60;
 var questions = [
   {
     question: "Which property is used to change the background color in CSS?",
@@ -44,106 +48,101 @@ var questions = [
     answer: "Both 1 & 2"
   }
 ];
+var displayedScores = false;
+viewScoresEl.addEventListener('click',function(){
+  if (!displayedScores){
+    displayScores();
+    viewPlayerScores();
+    displayedScores = true;
+  }else{
+    goBack();
+    viewScoresEl.innerText = "View High Scores";
+    displayedScores = false;
+  }
+})
 
 // Event listener for the start button
 startButton.addEventListener('click', startQuiz);
 // Start quiz function
 function startQuiz() {
   // Reset game state
-  let currentQuestionIndex = 0;
-  let score = 0;
-  let timer = 60; // absolute timer
+  currentQuestionIndex = 0;
+  score = 0;
+  timer = 60;
   isGameOver = false;
   shuffler(); // Shuffle the questions
-
+  displayQuestion(); // Display the first question
   let runningTime = setInterval(function(){
     timer--;
+    timerCD.innerText = "Time left: " + timer + " seconds";
     if (timer<=0){
       isGameOver=true;
+      timer=0;
+      displayScoreInput();
+      timerCD.innerText = "Time left: " + timer + " seconds";
       clearInterval(runningTime);
-    }
-    timerCD.innerText = "Time left: " + timer + " seconds";
-  },1000);
-
-  // Display Questions
-  let optionsDiv = document.getElementById('options');
-  let scoreTag = document.getElementById('userScore');
-  questions.forEach(function(currentValue,index){
-    mainEl.innerText = currentValue.question;
-
-    // creating buttons for each option
-    currentValue.options.forEach(function(choice){
-      let optionButton = document.createElement('button');
-      optionButton.innerText = (index + 1) + ". " + choice;
-      optionsDiv.appendChild(optionButton);
-      // check if button was clicked and if it was the right/wrong answer
-      optionButton.addEventListener('click', function () {
-        if (choice === currentValue.answer) {
-          score+=10;
-          scoreTag.innerText = score + " Points";
-        }else{
-          timer-=5;
+    }else{
+        if (currentQuestionIndex < questions.length) {
+          displayQuestion();
+        } else {
+          displayScoreInput();
         }
-      });
-
-
-    })
-  });
-  startButton.disabled = true; // Disable the start button
+    }
+  },1000);
+  startButton.disabled = false;
+  startButton.disabled = true;
 }
 
 // Display question function with message display logic
 function displayQuestion() {
-    // optionButton.addEventListener('click', function () {
-    //   if (question.options[i] === question.answer) {
-    //     correct();
-    //     showMessage("Correct!", 1000);
-    //   } else {
-    //     showMessage("Wrong!", 1000);
-    //     wrong();
-    //   }
+  if (!isGameOver){
+    if (currentQuestionIndex===questions.length){
+      isGameOver=true;
+      timer=0;
+      return;
+    }
+    const question = questions[currentQuestionIndex];
+    mainEl.innerText = question.question;
 
-  //     setTimeout(function () {
-  //       currentQuestionIndex++;
-  //       if (currentQuestionIndex < questions.length) {
-  //         displayQuestion();
-  //       } else {
-  //         displayScoreInput();
-  //       }
-  //     }, 1000);
-  //   });
+    const optionsDiv = document.createElement('div');
+    optionsDiv.id = 'options';
 
-  //   optionsDiv.appendChild(optionButton);
-  // }
-  // mainEl.appendChild(optionsDiv);
+    for (let i = 0; i < question.options.length; i++) {
+      const optionButton = document.createElement('button');
+      optionButton.innerText = (i + 1) + ". " + question.options[i];
+
+      optionButton.addEventListener('click', function () {
+        if (question.options[i] === question.answer) {
+          correct();
+          showMessage("Correct!");
+        } else {
+          showMessage("Wrong! The correct answer was: " + question.answer);
+          timer -= 5;
+          wrong();
+        }
+        currentQuestionIndex++;
+        displayQuestion();
+      });
+
+      optionsDiv.appendChild(optionButton);
+    } 
+    mainEl.appendChild(optionsDiv);
+  }else{
+    displayScoreInput();
+  }
 }
 
 // Show message function
-function showMessage(message, duration) {
+function showMessage(message) {
   messageDiv.innerText = message;
   messageDiv.style.display = 'block';
 
   setTimeout(function () {
     messageDiv.innerText = '';
     messageDiv.style.display = 'none';
-  }, duration);
+  }, 2000);
 }
 
-// Update timer function
-  // if (timer >= 0) {
-  //   timerCD.innerText = "Time left: " + timer + " seconds";
-  //   timer--;
-  //   setTimeout(updateTimer, 1000);
-  // } else {
-  //   // If time runs out for a question, proceed to the next question or end the quiz
-  //   currentQuestionIndex++;
-  //   if (currentQuestionIndex < questions.length) {
-  //     displayQuestion();
-  //   } else {
-  //     displayScoreInput();
-  //   }
-  // }
-// }
 // Shuffle function
 function shuffler() {
   for (var i = 0; i < questions.length; i++) {
@@ -152,8 +151,13 @@ function shuffler() {
   }
 }
 
+// Functions to update the score
+function correct() {
+  score += 10;
+}
+
 function wrong() {
-  score -= 1;
+  score -= 5;
 }
 
 // Save player's name and score to local storage
@@ -181,50 +185,96 @@ function displayScoreInput() {
   playerNameInput.setAttribute('placeholder', 'Your name');
   mainEl.appendChild(playerNameInput);
 
+  var playAgainButton = document.createElement('button');
+  playAgainButton.id = 'play-again-button';
+  playAgainButton.textContent = 'Play Again';
+  playAgainButton.addEventListener('click', playAgain);
+
   var submitButton = document.createElement('button');
   submitButton.textContent = 'Submit';
   submitButton.addEventListener('click', function () {
-  var playerName = playerNameInput.value;
-  saveScore(playerName, score);
-  displayScores();
+    var playerName = playerNameInput.value;
+    saveScore(playerName, score);
+    displayScores();
   });
   mainEl.appendChild(submitButton);
+  mainEl.appendChild(playAgainButton); // Add the play again button to the display
 }
 
 // Display top 5 scores
 function displayScores() {
-  var scores = JSON.parse(localStorage.getItem('scores'));
+  var players = JSON.parse(localStorage.getItem('scores'));
+  players.sort(function(a,b){// Sort scores in descending order
+    if (a.score < b.score) {
+      return 1;
+    } else {
+      return -1;
+    }
+  });
   var scoresDiv = document.getElementById('scores');
 
   scoresDiv.innerHTML = ''; // Clear existing content
 
-  if (scores && scores.length > 0) {
-    // Sort scores in descending order
-    scores.sort(function(a,b){
-      b.score - a.score;
-    });
-
-    // Display the top 5 scores
+  if (players.length) {
+    // Display the top 5 players
     var heading = document.createElement('p');
     heading.textContent = 'HIGH SCORES:';
     scoresDiv.appendChild(heading);
 
-    var maxDisplay = Math.min(scores.length, 5);
+    var maxDisplay = Math.min(players.length, 5);
     for (var i = 0; i < maxDisplay; i++) {
-      if (scores[i].playerName && scores[i].score) {
+      if (players[i].playerName && players[i].score) {
         var scoreElement = document.createElement('p');
-        scoreElement.textContent = scores[i].playerName + ': ' + scores[i].score;
+        scoreElement.textContent = players[i].playerName + ': ' + players[i].score;
         scoresDiv.appendChild(scoreElement);
       }
     }
   } else {
-    // Display a message when no scores are available
-    var noScoresElement = document.createElement('p');
-    noScoresElement.textContent = 'No scores available.';
-    scoresDiv.appendChild(noScoresElement);
+    // Display a message when no players are available
+    var noplayersElement = document.createElement('p');
+    noplayersElement.textContent = 'No scores available.';
+    scoresDiv.appendChild(noplayersElement);
   }
+  scoresDiv.style.display = 'block';
 }
 
+function goBack(){
+  var scoresDiv = document.getElementById('scores');
+  scoresDiv.style.display = 'none';
+  startButton.style.display= 'block';
+  timerCD.style.display='block';
+  clearScoreBtn.style.display='none';
+}
 
+function viewPlayerScores(){
+  startButton.style.display= 'none';
+  timerCD.style.display='none';
+  clearScoreBtn.style.display='block';
+  viewScoresEl.innerText = "Go Back";
+}
 
+function clearScores() {
+  localStorage.removeItem('scores');
+  displayScores();
+}
 
+function playAgain(){
+  // Reset game state
+  currentQuestionIndex = 0;
+  score = 0;
+  timer = 60;
+  isGameOver = false;
+  startButton.disabled = false;
+  // Clear displayed content
+  mainEl.innerHTML = '';
+  messageDiv.innerText = '';
+
+  // Display the start button and timer
+  startButton.style.display = 'block';
+  timerCD.style.display = 'block';
+
+  // Hide the clear scores button if it's visible
+  if (clearScoreBtn.style.display === 'block') {
+    clearScoreBtn.style.display = 'none';
+  }
+}
