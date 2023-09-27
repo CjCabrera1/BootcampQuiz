@@ -65,3 +65,12 @@ button {
   display: none;
   margin: 0 auto;
 }
+
+a{
+  font-size: 20px;
+  font-weight: bold;
+}
+a:hover {
+  color:purple;
+  background-color: aqua;
+}
