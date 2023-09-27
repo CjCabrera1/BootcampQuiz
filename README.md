@@ -15,3 +15,7 @@ When the user clicks on start quiz the quiz will then begin and the user will ha
 https://cjcabrera1.github.io/BootcampQuiz/
 
 ![image](./Assets/ProjectQuiz.png)
+
+## KNOWN BUGS
+- Sometimes the buttons do not work on first click
+- The Timer counts down by 2 instead of 1
